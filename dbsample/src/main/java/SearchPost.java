@@ -8,9 +8,9 @@ import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
-import java.sql.Statement;
+import java.sql.PreparedStatement;
 
-@WebServlet(name = "SearchPost", urlPatterns = {"/searchpost"})
+@WebServlet(name = "SearchPost", urlPatterns = {"/searchPost"})
 public class SearchPost extends HttpServlet {
 
     public void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -27,33 +27,45 @@ public class SearchPost extends HttpServlet {
 
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
+
         response.setContentType("text/html;charset=UTF-8");
         PrintWriter out = response.getWriter();
-        try {
 
+        try {
             String product_name = request.getParameter("product_name");
 
-            try {
-                Class.forName("com.mysql.jdbc.Driver");
-                Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/webapp", "root", "mypassword");
+            Class.forName("com.mysql.jdbc.Driver");
 
-                Statement st = conn.createStatement();
-                String sql = "SELECT product_name, product_price FROM products WHERE product_name='" + product_name + "'";
-                System.out.println(sql);
-                ResultSet rs = st.executeQuery(sql);
+            String dbPassword = System.getenv("DB_PASSWORD");
 
-                while (rs.next()) {
-                    String prod_name = rs.getString("product_name");
-                    String prod_price = rs.getString("product_price");
-                    out.println(prod_name);
-                    out.println(prod_price);
-                    out.println("<br/>");
+            String sql = "SELECT product_name, product_price " +
+                    "FROM products WHERE product_name=?";
+
+            try (Connection conn = DriverManager.getConnection(
+                    "jdbc:mysql://localhost:3306/webapp",
+                    "root",
+                    dbPassword
+            );
+                 PreparedStatement st = conn.prepareStatement(sql)) {
+
+                st.setString(1, product_name);
+
+                try (ResultSet rs = st.executeQuery()) {
+
+                    while (rs.next()) {
+
+                        String prod_name = rs.getString("product_name");
+                        String prod_price = rs.getString("product_price");
+
+                        out.println(prod_name);
+                        out.println(prod_price);
+                        out.println("<br/>");
+                    }
                 }
-                conn.close();
-
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         } finally {
             out.close();
         }
