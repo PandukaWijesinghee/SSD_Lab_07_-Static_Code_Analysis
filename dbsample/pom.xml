@@ -49,6 +49,7 @@
     <finalName>dbsample</finalName>
 
     <plugins>
+
       <plugin>
         <artifactId>maven-dependency-plugin</artifactId>
         <executions>
@@ -64,10 +65,13 @@
         </executions>
       </plugin>
 
-      <!--plugin>
+      <plugin>
         <groupId>org.owasp</groupId>
         <artifactId>dependency-check-maven</artifactId>
-        <version>1.4.5</version>
+        <version>12.1.0</version>
+        <configuration>
+          <ossindexAnalyzerEnabled>false</ossindexAnalyzerEnabled>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -75,8 +79,9 @@
             </goals>
           </execution>
         </executions>
-      </plugin-->
+      </plugin>
 
     </plugins>
+
   </build>
 </project>
